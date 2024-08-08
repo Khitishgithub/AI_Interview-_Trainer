@@ -42,10 +42,10 @@ const Feedback = ({ params }) => {
         ) : (
           <>
             <h2 className="text-3xl font-bold text-green-500">
-              Congratulation
+              Congratulation👍
             </h2>
             <h2 className="font-bold text-2xl">
-              Here is your interview feedback
+            Here’s some feedback from your interview.
             </h2>
             <h2 className="text-cyan-500 text-lg my-3">
               Your overall interview rating :<strong>7/10</strong>

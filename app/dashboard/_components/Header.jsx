@@ -13,8 +13,9 @@ const Header = () => {
 
   })
   return (
-    <div className="flex p-4 items-center justify-between bg-secondary shadow-md">
-      <Image src={"/logo.svg"} width={100} height={30} alt="logo" />
+    <div className="flex p-4 items-center justify-between  bg-gray-300 rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-50 border border-gray-100
+ shadow-md">
+      <Image src={"/logo.png"} width={100} height={30} alt="logo" />
       <ul className=" hidden md:flex gap-6">
         <li className={` text-black-900  font-bold transition cursor-pointer
           ${path=='/dashboard' && 'text-primary font-bold'}`
