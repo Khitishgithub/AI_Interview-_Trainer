@@ -10,13 +10,13 @@ import React, { useEffect, useState } from "react";
 import Webcam from "react-webcam";
 
 function Interview({ params }) {
-  const [interviewData, setInterviewData] = useState(null); // Initialize with null
+  const [interviewData, setInterviewData] = useState(null); 
   const [webcamEnable, setWebcamEnable] = useState(false);
 
   useEffect(() => {
     console.log(params.interviewId);
     GetinterviewDetails();
-  }, []); // Add params.interviewId to dependency array
+  }, []); 
 
   const GetinterviewDetails = async () => {
     try {
@@ -25,9 +25,9 @@ function Interview({ params }) {
         .from(mockInterview)
         .where(eq(mockInterview.mockId, params.interviewId));
 
-      console.log("Raw Result:", result); // Check the raw result
+      console.log("Raw Result:", result); 
       if (result.length > 0) {
-        console.log("Interview Data:", result[0]); // Check the specific result object
+        console.log("Interview Data:", result[0]); 
         setInterviewData(result[0]);
       } else {
         console.warn("No data found for the provided interview ID");
