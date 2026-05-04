@@ -7,7 +7,6 @@ const DashboardLayout = ({children}) => {
     <div>
       <Header/>
       <div>
-   
         {children}
         </div>
       

@@ -5,31 +5,27 @@ import {
   Dialog, DialogContent, DialogDescription,
   DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { sendPrompt, sendPromptWithPDF } from "@/utils/GeminiAIModel";
-import { LoaderCircle, Upload, X, FileText, ClipboardList } from "lucide-react";
+import { LoaderCircle, Upload, X, FileText, ClipboardList, Plus, Sparkles, Terminal } from "lucide-react";
 import { mockInterview } from "@/utils/schema";
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "@clerk/nextjs";
 import { db } from "@/utils/db";
 import moment from "moment";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 const AddNewInterview = () => {
   const [openDialog, setOpenDialog] = useState(false);
-  const [mode, setMode] = useState("form"); // "form" | "resume"
-
-  // Form mode state
+  const [mode, setMode] = useState("form");
   const [jobPosition, setJobPosition] = useState("");
   const [jobDesc, setJobDesc] = useState("");
   const [jobExperience, setJobExperience] = useState("");
-
-  // Resume mode state
   const [resumeFile, setResumeFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
   const router = useRouter();
@@ -44,29 +40,22 @@ const AddNewInterview = () => {
     });
 
   const handleFileChange = (file) => {
-    if (file && file.type === "application/pdf") {
-      setResumeFile(file);
-    } else {
-      alert("Please upload a PDF file.");
-    }
+    if (file && file.type === "application/pdf") setResumeFile(file);
+    else alert("Please upload a PDF file.");
   };
 
   const handleClose = () => {
     setOpenDialog(false);
     setMode("form");
-    setJobPosition("");
-    setJobDesc("");
-    setJobExperience("");
+    setJobPosition(""); setJobDesc(""); setJobExperience("");
     setResumeFile(null);
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       let rawResult;
-
       if (mode === "resume") {
         const pdfBase64 = await fileToBase64(resumeFile);
         const prompt = `The candidate's resume is attached. Based on their experience and skills in the resume, generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} relevant interview questions with answers in JSON. Return only a JSON object with a key "questions" containing an array of objects, each with "question" and "answer" fields.`;
@@ -75,208 +64,260 @@ const AddNewInterview = () => {
         const prompt = `Job position: ${jobPosition}. Job Description: ${jobDesc}. Years of Experience: ${jobExperience}. Generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answers in JSON. Return only a JSON object with a key "questions" containing an array of objects, each with "question" and "answer" fields.`;
         rawResult = await sendPrompt(prompt);
       }
-
       const mockJsonResp = rawResult.replace(/```json/g, "").replace(/```/g, "").trim();
       const parsedJson = JSON.parse(mockJsonResp);
-
-      const resp = await db
-        .insert(mockInterview)
-        .values({
-          mockId: uuidv4(),
-          jsonMockResp: mockJsonResp,
-          jobPosition: mode === "resume" ? "From Resume" : jobPosition,
-          jobDesc: mode === "resume" ? resumeFile.name : jobDesc,
-          jobExperience: mode === "resume" ? "N/A" : jobExperience,
-          createdBy: user?.primaryEmailAddress?.emailAddress,
-          createdAt: moment().format("DD-MM-yyyy"),
-        })
-        .returning({ mockId: mockInterview.mockId });
-
-      if (resp) {
-        handleClose();
-        router.push("/dashboard/interview/" + resp[0]?.mockId);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-
+      const resp = await db.insert(mockInterview).values({
+        mockId: uuidv4(),
+        jsonMockResp: mockJsonResp,
+        jobPosition: mode === "resume" ? "From Resume" : jobPosition,
+        jobDesc: mode === "resume" ? resumeFile.name : jobDesc,
+        jobExperience: mode === "resume" ? "N/A" : jobExperience,
+        createdBy: user?.primaryEmailAddress?.emailAddress,
+        createdAt: moment().format("DD-MM-yyyy"),
+      }).returning({ mockId: mockInterview.mockId });
+      if (resp) { handleClose(); router.push("/dashboard/interview/" + resp[0]?.mockId); }
+    } catch (error) { console.error("Error:", error); }
     setLoading(false);
   };
 
-  const canSubmit =
-    mode === "form"
-      ? jobPosition && jobDesc && jobExperience
-      : !!resumeFile;
+  const canSubmit = mode === "form" ? jobPosition && jobDesc && jobExperience : !!resumeFile;
 
   return (
-    <div>
-      <div
-        className="p-10 border rounded-lg bg-secondary hover:scale-102 hover:shadow-md cursor-pointer transition-all"
+    <>
+      {/* ── Trigger Card ── */}
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         onClick={() => setOpenDialog(true)}
+        className="group relative cursor-pointer h-[160px] rounded-2xl overflow-hidden border border-white/6 bg-[#0a0a12]"
       >
-        <h2 className="text-center font-bold text-lg">👉 Add New</h2>
-      </div>
-
-      <Dialog open={openDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-bold text-2xl">
-              Set up your interview
-            </DialogTitle>
-            <DialogDescription>
-              Choose how you want to get started.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* ── Mode toggle ── */}
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            <button
-              type="button"
-              onClick={() => setMode("form")}
-              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg border text-sm font-medium transition-all ${
-                mode === "form"
-                  ? "border-indigo-500 bg-indigo-50 text-indigo-700 border-2"
-                  : "border-gray-200 text-gray-500 hover:border-gray-300"
-              }`}
-            >
-              <ClipboardList size={16} />
-              Fill in details
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("resume")}
-              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg border text-sm font-medium transition-all ${
-                mode === "resume"
-                  ? "border-indigo-500 bg-indigo-50 text-indigo-700 border-2"
-                  : "border-gray-200 text-gray-500 hover:border-gray-300"
-              }`}
-            >
-              <FileText size={16} />
-              Upload resume
-            </button>
+        {/* Top accent */}
+        <div
+          className="absolute top-0 left-0 right-0 h-[2px] opacity-60 group-hover:opacity-100 transition-opacity"
+          style={{ backgroundImage: "linear-gradient(90deg, transparent, #818cf8, transparent)" }}
+        />
+        {/* Inner glow on hover */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+          style={{ background: "radial-gradient(500px circle at 50% 0%, rgba(99,102,241,0.08), transparent 70%)" }}
+        />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:bg-indigo-500/20 transition-colors">
+            <Plus size={22} className="text-indigo-400" />
           </div>
+          <div className="text-center">
+            <p
+              className="text-white text-sm font-black uppercase tracking-widest group-hover:text-indigo-300 transition-colors"
+              style={{ fontFamily: "'Courier New', monospace" }}
+            >
+              New Interview
+            </p>
+            <p className="text-slate-600 text-[10px] font-mono mt-0.5">Start a session</p>
+          </div>
+        </div>
+        {/* Bottom shimmer */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      </motion.div>
 
-          <form onSubmit={onSubmit}>
-            {/* ── Form mode ── */}
-            {mode === "form" && (
-              <div className="space-y-4 mt-2">
-                <div>
-                  <label className="text-sm font-bold text-black block mb-1">
-                    Job role / position
-                  </label>
-                  <Input
-                    placeholder="Ex. Full Stack Developer"
-                    required
-                    value={jobPosition}
-                    onChange={(e) => setJobPosition(e.target.value)}
-                  />
+      {/* ── Dialog ── */}
+      <Dialog open={openDialog} onOpenChange={(v) => !v && handleClose()}>
+        <DialogContent className="max-w-2xl bg-[#07070f] border border-white/8 text-slate-200 rounded-3xl shadow-2xl shadow-black/60 p-0 overflow-hidden">
+
+          {/* Top gradient bar */}
+          <div className="h-[2px] w-full shrink-0" style={{ backgroundImage: "linear-gradient(90deg, #4f46e5, #7c3aed, #db2777)" }} />
+
+          <div className="px-8 py-7">
+            <DialogHeader className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                  <Terminal size={13} className="text-indigo-400" />
                 </div>
-                <div>
-                  <label className="text-sm font-bold text-black block mb-1">
-                    Job description / tech stack
-                  </label>
-                  <Textarea
-                    placeholder="Ex. React, Next.js, Angular, MySQL etc."
-                    required
-                    value={jobDesc}
-                    onChange={(e) => setJobDesc(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-bold text-black block mb-1">
-                    Years of experience
-                  </label>
-                  <Input
-                    placeholder="Ex. 5"
-                    type="number"
-                    max="50"
-                    required
-                    value={jobExperience}
-                    className="w-32"
-                    onChange={(e) => setJobExperience(e.target.value)}
-                  />
-                </div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400">Interview Setup</span>
               </div>
-            )}
+              <DialogTitle
+                className="text-white text-2xl font-black"
+                style={{ fontFamily: "'Courier New', monospace" }}
+              >
+                Configure Session
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 text-xs font-mono mt-1">
+                Choose how to generate your interview questions
+              </DialogDescription>
+            </DialogHeader>
 
-            {/* ── Resume mode ── */}
-            {mode === "resume" && (
-              <div className="mt-2">
-                {!resumeFile ? (
-                  <div
-                    className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
-                      isDragging
-                        ? "border-indigo-400 bg-indigo-50"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    }`}
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                      handleFileChange(e.dataTransfer.files[0]);
-                    }}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="mx-auto mb-3 text-gray-400" size={32} />
-                    <p className="text-sm font-medium text-gray-700">
-                      Drop your resume PDF here
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      or click to browse — PDF only
-                    </p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      onChange={(e) => handleFileChange(e.target.files[0])}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 p-3 border rounded-lg bg-gray-50 mt-2">
-                    <FileText size={20} className="text-red-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-700 flex-1 truncate">
-                      {resumeFile.name}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {(resumeFile.size / 1024).toFixed(0)} KB
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setResumeFile(null)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                )}
-                <p className="text-xs text-gray-400 mt-2">
-                  Questions will be generated entirely from your resume content.
-                </p>
-              </div>
-            )}
-
-            {/* ── Actions ── */}
-            <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" type="button" onClick={handleClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading || !canSubmit}>
-                {loading ? (
-                  <>
-                    <LoaderCircle className="animate-spin mr-2" size={16} />
-                    Generating...
-                  </>
-                ) : (
-                  "Start Interview"
-                )}
-              </Button>
+            {/* ── Mode toggle ── */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {[
+                { key: "form", icon: ClipboardList, label: "Fill Details" },
+                { key: "resume", icon: FileText, label: "Upload Resume" },
+              ].map(({ key, icon: Icon, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setMode(key)}
+                  className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all ${
+                    mode === key
+                      ? "border-indigo-500/50 bg-indigo-500/10 text-indigo-300"
+                      : "border-white/6 bg-white/[0.02] text-slate-500 hover:border-white/12 hover:text-slate-400"
+                  }`}
+                  style={{ fontFamily: "'Courier New', monospace" }}
+                >
+                  <Icon size={13} />
+                  {label}
+                </button>
+              ))}
             </div>
-          </form>
+
+            <form onSubmit={onSubmit}>
+              <AnimatePresence mode="wait">
+                {/* ── Form mode ── */}
+                {mode === "form" && (
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="space-y-4"
+                  >
+                    {[
+                      { label: "Job Role / Position", placeholder: "Ex. Full Stack Developer", value: jobPosition, setter: setJobPosition, type: "input" },
+                      { label: "Job Description / Tech Stack", placeholder: "Ex. React, Next.js, MySQL...", value: jobDesc, setter: setJobDesc, type: "textarea" },
+                    ].map(({ label, placeholder, value, setter, type }) => (
+                      <div key={label}>
+                        <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 block mb-1.5">
+                          {label}
+                        </label>
+                        {type === "input" ? (
+                          <Input
+                            placeholder={placeholder}
+                            required
+                            value={value}
+                            onChange={(e) => setter(e.target.value)}
+                            className="bg-white/[0.03] border-white/8 text-slate-200 placeholder:text-slate-600 rounded-xl focus:border-indigo-500/50 focus:ring-0 font-mono text-sm"
+                          />
+                        ) : (
+                          <Textarea
+                            placeholder={placeholder}
+                            required
+                            value={value}
+                            onChange={(e) => setter(e.target.value)}
+                            className="bg-white/[0.03] border-white/8 text-slate-200 placeholder:text-slate-600 rounded-xl focus:border-indigo-500/50 focus:ring-0 font-mono text-sm resize-none"
+                            rows={3}
+                          />
+                        )}
+                      </div>
+                    ))}
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 block mb-1.5">
+                        Years of Experience
+                      </label>
+                      <Input
+                        placeholder="Ex. 5"
+                        type="number"
+                        max="50"
+                        required
+                        value={jobExperience}
+                        onChange={(e) => setJobExperience(e.target.value)}
+                        className="bg-white/[0.03] border-white/8 text-slate-200 placeholder:text-slate-600 rounded-xl focus:border-indigo-500/50 focus:ring-0 font-mono text-sm w-32"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ── Resume mode ── */}
+                {mode === "resume" && (
+                  <motion.div
+                    key="resume"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                  >
+                    {!resumeFile ? (
+                      <div
+                        className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
+                          isDragging
+                            ? "border-indigo-500/60 bg-indigo-500/8"
+                            : "border-white/8 hover:border-indigo-500/30 hover:bg-indigo-500/4"
+                        }`}
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFileChange(e.dataTransfer.files[0]); }}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <div className="w-14 h-14 rounded-2xl bg-white/4 border border-white/8 flex items-center justify-center mx-auto mb-4">
+                          <Upload size={22} className="text-indigo-400" />
+                        </div>
+                        <p className="text-white text-sm font-black uppercase tracking-widest mb-1" style={{ fontFamily: "'Courier New', monospace" }}>
+                          Drop Resume Here
+                        </p>
+                        <p className="text-slate-600 text-[11px] font-mono">
+                          or click to browse — PDF only
+                        </p>
+                        <input ref={fileInputRef} type="file" accept="application/pdf" className="hidden"
+                          onChange={(e) => handleFileChange(e.target.files[0])} />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/8 border border-emerald-500/20">
+                        <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <FileText size={16} className="text-emerald-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-black truncate" style={{ fontFamily: "'Courier New', monospace" }}>
+                            {resumeFile.name}
+                          </p>
+                          <p className="text-emerald-600 text-[10px] font-mono mt-0.5">
+                            {(resumeFile.size / 1024).toFixed(0)} KB · Ready
+                          </p>
+                        </div>
+                        <button type="button" onClick={() => setResumeFile(null)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
+                    <p className="text-[11px] text-slate-600 font-mono mt-3">
+                      Questions will be generated from your resume content.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* ── Actions ── */}
+              <div className="flex justify-end gap-3 mt-7 pt-6 border-t border-white/6">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-5 py-2.5 rounded-xl bg-white/4 border border-white/8 text-slate-400 hover:text-white hover:border-white/16 transition-colors text-xs font-bold uppercase tracking-widest"
+                  style={{ fontFamily: "'Courier New', monospace" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !canSubmit}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  style={{
+                    fontFamily: "'Courier New', monospace",
+                    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <LoaderCircle className="animate-spin" size={13} />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      
+                      Start Interview
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 

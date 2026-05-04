@@ -53,7 +53,7 @@ const InterviewItemCard = ({ interview }) => {
             <Button 
               size="sm" 
               variant="outline" 
-              className="w-full border-slate-700 bg-transparent text-slate-300 font-bold rounded-xl hover:bg-slate-800 hover:border-slate-600 transition-all flex gap-2"
+              className="w-full border-slate-700 bg-transparent text-slate-300 font-bold rounded-xl  hover:border-slate-600 transition-all flex gap-2"
             >
               <ClipboardCheck size={14} /> Feedback
             </Button>
