@@ -303,7 +303,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
           {/* Top accent bar */}
           <div className="h-[2px] w-full" style={{ backgroundImage: "linear-gradient(90deg, #4f46e5, #7c3aed, #db2777)" }} />
 
-          <div className="p-8 grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-10">
+          <div className="p-8 grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-10 ">
             <div className="space-y-7">
               <FilterRow
                 label="PLATFORM"

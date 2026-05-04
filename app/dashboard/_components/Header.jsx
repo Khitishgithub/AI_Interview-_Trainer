@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/practice", label: "Practice Coding" },
   { href: "/dashboard/interviewExperiences", label: "Experiences" },
+  { href: "/dashboard/battle", label: "Battle Mode" },
 ];
 
 const Header = () => {
