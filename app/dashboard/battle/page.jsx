@@ -1,15 +1,34 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
 import dynamic from "next/dynamic";
 import {
-  Play, Bot, Loader2, RefreshCcw, Swords, Terminal,
-  Clock, CheckCircle2, XCircle, Zap, Trophy, Cpu, User,
-  ChevronRight, Circle
+  Play,
+  Bot,
+  Loader2,
+  RefreshCcw,
+  Swords,
+  Terminal,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Zap,
+  Trophy,
+  Cpu,
+  User,
+  ChevronRight,
+  Circle,
 } from "lucide-react";
 
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+});
 
 /* ─── Cursor Glow ─────────────────────────────────────────────── */
 function CursorGlow() {
@@ -19,7 +38,10 @@ function CursorGlow() {
   const sy = useSpring(y, { stiffness: 100, damping: 20 });
 
   useEffect(() => {
-    const move = (e) => { x.set(e.clientX); y.set(e.clientY); };
+    const move = (e) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+    };
     window.addEventListener("mousemove", move);
     return () => window.removeEventListener("mousemove", move);
   }, []);
@@ -53,8 +75,13 @@ const QUESTIONS = [
     id: 1,
     title: "Two Sum",
     difficulty: "Easy",
-    difficultyColor: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-    description: "Given an array of integers and a target, return indices of the two numbers that add up to the target.",
+    difficultyColor: {
+      text: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+    },
+    description:
+      "Given an array of integers and a target, return indices of the two numbers that add up to the target.",
     constraints: ["2 ≤ nums.length ≤ 10⁴", "Only one valid answer exists"],
     solution: `int twoSum(vector<int>& nums, int target) {
     unordered_map<int,int> mp;
@@ -71,9 +98,17 @@ const QUESTIONS = [
     id: 2,
     title: "Palindrome Check",
     difficulty: "Easy",
-    difficultyColor: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-    description: "Check if a string is a palindrome, considering only alphanumeric characters and ignoring cases.",
-    constraints: ["1 ≤ s.length ≤ 2×10⁵", "s consists of printable ASCII chars"],
+    difficultyColor: {
+      text: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+    },
+    description:
+      "Check if a string is a palindrome, considering only alphanumeric characters and ignoring cases.",
+    constraints: [
+      "1 ≤ s.length ≤ 2×10⁵",
+      "s consists of printable ASCII chars",
+    ],
     solution: `bool isPalindrome(string s) {
     int l = 0, r = s.size() - 1;
     while (l < r) {
@@ -88,8 +123,13 @@ const QUESTIONS = [
     id: 3,
     title: "Max Subarray",
     difficulty: "Medium",
-    difficultyColor: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-    description: "Given an integer array, find the subarray which has the largest sum and return its sum.",
+    difficultyColor: {
+      text: "text-amber-400",
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/20",
+    },
+    description:
+      "Given an integer array, find the subarray which has the largest sum and return its sum.",
     constraints: ["1 ≤ nums.length ≤ 10⁵", "-10⁴ ≤ nums[i] ≤ 10⁴"],
     solution: `int maxSubArray(vector<int>& nums) {
     int sum = nums[0], maxSum = nums[0];
@@ -104,8 +144,13 @@ const QUESTIONS = [
     id: 4,
     title: "Valid Parentheses",
     difficulty: "Medium",
-    difficultyColor: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-    description: "Given a string containing just brackets, determine if the input string is valid.",
+    difficultyColor: {
+      text: "text-amber-400",
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/20",
+    },
+    description:
+      "Given a string containing just brackets, determine if the input string is valid.",
     constraints: ["1 ≤ s.length ≤ 10⁴", "s consists of '()[]{}'"],
     solution: `bool isValid(string s) {
     stack<char> st;
@@ -134,8 +179,10 @@ function TypewriterText({ text, delay = 0 }) {
     let i = 0;
     const t = setTimeout(() => {
       const interval = setInterval(() => {
-        if (i < text.length) { setDisplayed(text.slice(0, i + 1)); i++; }
-        else clearInterval(interval);
+        if (i < text.length) {
+          setDisplayed(text.slice(0, i + 1));
+          i++;
+        } else clearInterval(interval);
       }, 18);
       return () => clearInterval(interval);
     }, delay);
@@ -151,7 +198,9 @@ function BlinkCursor() {
       animate={{ opacity: [1, 0, 1] }}
       transition={{ repeat: Infinity, duration: 1 }}
       className="text-rose-400"
-    >_</motion.span>
+    >
+      _
+    </motion.span>
   );
 }
 
@@ -184,9 +233,33 @@ function VsDivider({ battling }) {
 /* ─── Result Banner ───────────────────────────────────────────── */
 function ResultBanner({ result }) {
   const configs = {
-    win:  { label: "VICTORY",   sub: "You crushed the AI",       icon: Trophy, color: "text-amber-300", border: "border-amber-500/30", bg: "bg-amber-500/8",  dot: "#fcd34d" },
-    lose: { label: "DEFEATED",  sub: "AI outpaced you this time", icon: Cpu,    color: "text-rose-300",  border: "border-rose-500/30",  bg: "bg-rose-500/8",   dot: "#fda4af" },
-    draw: { label: "DRAW",      sub: "An even battle",            icon: Swords, color: "text-indigo-300",border: "border-indigo-500/30",bg: "bg-indigo-500/8", dot: "#818cf8" },
+    win: {
+      label: "VICTORY",
+      sub: "You crushed the AI",
+      icon: Trophy,
+      color: "text-amber-300",
+      border: "border-amber-500/30",
+      bg: "bg-amber-500/8",
+      dot: "#fcd34d",
+    },
+    lose: {
+      label: "DEFEATED",
+      sub: "AI outpaced you this time",
+      icon: Cpu,
+      color: "text-rose-300",
+      border: "border-rose-500/30",
+      bg: "bg-rose-500/8",
+      dot: "#fda4af",
+    },
+    draw: {
+      label: "DRAW",
+      sub: "An even battle",
+      icon: Swords,
+      color: "text-indigo-300",
+      border: "border-indigo-500/30",
+      bg: "bg-indigo-500/8",
+      dot: "#818cf8",
+    },
   };
   const c = configs[result];
   if (!c) return null;
@@ -198,20 +271,17 @@ function ResultBanner({ result }) {
     >
       <div
         className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ backgroundImage: `linear-gradient(90deg, transparent, ${c.dot}, transparent)` }}
+        style={{
+          backgroundImage: `linear-gradient(90deg, transparent, ${c.dot}, transparent)`,
+        }}
       />
       <div className="flex items-center gap-4">
         <div className={`p-3 rounded-xl bg-white/5 border border-white/8`}>
           <c.icon size={24} className={c.color} />
         </div>
         <div>
-          <p
-            className={`text-2xl font-black italic ${c.color}`}
-            style={{ fontFamily: "'Courier New', monospace" }}
-          >
-            {c.label}
-          </p>
-          <p className="text-slate-500 text-xs font-mono mt-0.5">{c.sub}</p>
+          <p className={`text-2xl font-black italic ${c.color}`}>{c.label}</p>
+          <p className="text-white text-xs  mt-0.5">{c.sub}</p>
         </div>
       </div>
     </motion.div>
@@ -223,14 +293,24 @@ function StatPill({ icon: Icon, label, value, accent = "text-indigo-400" }) {
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/4 border border-white/6">
       <Icon size={11} className={accent} />
-      <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{label}</span>
-      <span className={`text-[11px] font-black font-mono ${accent}`}>{value}</span>
+      <span className="text-[10px] text-white uppercase font-bold tracking-widest">
+        {label}
+      </span>
+      <span className={`text-[11px] font-black  ${accent}`}>{value}</span>
     </div>
   );
 }
 
 /* ─── Editor Panel ────────────────────────────────────────────── */
-function EditorPanel({ label, icon: Icon, color, code, onChange, readOnly = false, isTyping = false }) {
+function EditorPanel({
+  label,
+  icon: Icon,
+  color,
+  code,
+  onChange,
+  readOnly = false,
+  isTyping = false,
+}) {
   return (
     <div className="flex flex-col rounded-2xl overflow-hidden border border-white/8 bg-[#0a0a12]">
       {/* Panel header */}
@@ -241,7 +321,6 @@ function EditorPanel({ label, icon: Icon, color, code, onChange, readOnly = fals
           </div>
           <span
             className={`text-xs font-black uppercase tracking-widest ${color}`}
-            style={{ fontFamily: "'Courier New', monospace" }}
           >
             {label}
           </span>
@@ -254,13 +333,17 @@ function EditorPanel({ label, icon: Icon, color, code, onChange, readOnly = fals
               className="flex items-center gap-1.5 px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20"
             >
               <Zap size={8} className="text-rose-400" />
-              <span className="text-[9px] text-rose-400 font-bold uppercase">Typing</span>
+              <span className="text-[9px] text-rose-400 font-bold uppercase">
+                Typing
+              </span>
             </motion.div>
           )}
           <div className="flex gap-1">
-            {["bg-rose-500/60", "bg-amber-500/60", "bg-emerald-500/60"].map((c, i) => (
-              <div key={i} className={`w-2 h-2 rounded-full ${c}`} />
-            ))}
+            {["bg-rose-500/60", "bg-amber-500/60", "bg-emerald-500/60"].map(
+              (c, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full ${c}`} />
+              ),
+            )}
           </div>
         </div>
       </div>
@@ -325,7 +408,8 @@ export default function BattlePage() {
       const delay = char === "\n" ? 400 : Math.random() * 150 + 60;
       await new Promise((r) => setTimeout(r, delay));
       setAiCode((prev) => prev + char);
-if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
+      if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));
+    }
     setAiTyping(false);
   };
 
@@ -354,10 +438,11 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
     setRound((r) => r + 1);
   };
 
-  const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  const formatTime = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className="relative min-h-screen bg-[#04040a] text-slate-200 overflow-x-hidden selection:bg-rose-500/20">
+    <div className="relative min-h-screen bg-[#04040a] text-white overflow-x-hidden selection:bg-rose-500/20">
       <CursorGlow />
       <Scanlines />
 
@@ -392,7 +477,7 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
               <span className="w-1.5 h-1.5 bg-rose-400 rounded-full animate-pulse" />
               Arena Live
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white uppercase tracking-widest">
               <Terminal size={10} />
               Round {round}
             </div>
@@ -414,14 +499,16 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none mb-3"
-                style={{ fontFamily: "'Courier New', monospace" }}
+                className="text-6xl font-black uppercase  italic tracking-tighter leading-none mb-3"
               >
                 <span className="text-white">BATTLE</span>
                 <br />
                 <span
                   className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: "linear-gradient(135deg, #f43f5e, #a855f7, #6366f1)" }}
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(135deg, #f43f5e, #a855f7, #6366f1)",
+                  }}
                 >
                   ROYALE
                 </span>
@@ -430,7 +517,7 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="text-slate-500 text-sm font-mono tracking-widest max-w-md"
+                className="text-white text-sm  tracking-widest max-w-md"
               >
                 CODE FAST · THINK FASTER · BEAT THE MACHINE
               </motion.p>
@@ -443,16 +530,30 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
               transition={{ delay: 0.3 }}
               className="flex flex-wrap gap-2"
             >
-              <StatPill icon={User} label="You" value="Human" accent="text-sky-400" />
-              <StatPill icon={Cpu} label="Opponent" value="AI" accent="text-rose-400" />
-              <StatPill icon={Swords} label="Mode" value="1v1" accent="text-amber-400" />
+              <StatPill
+                icon={User}
+                label="You"
+                value="Human"
+                accent="text-sky-400"
+              />
+              <StatPill
+                icon={Cpu}
+                label="Opponent"
+                value="AI"
+                accent="text-rose-400"
+              />
+              <StatPill
+                icon={Swords}
+                label="Mode"
+                value="1v1"
+                accent="text-amber-400"
+              />
             </motion.div>
           </div>
         </div>
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-10 space-y-8">
-
         {/* ── QUESTION CARD ── */}
         <motion.div
           key={question.id}
@@ -463,40 +564,47 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
           {/* Top bar */}
           <div
             className="h-[2px] w-full"
-            style={{ backgroundImage: "linear-gradient(90deg, transparent, #f43f5e, #a855f7, transparent)" }}
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, transparent, #f43f5e, #a855f7, transparent)",
+            }}
           />
           <div className="p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 flex-wrap mb-3">
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600"
-                    style={{ fontFamily: "'Courier New', monospace" }}
-                  >
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">
                     Problem #{question.id}
                   </span>
-                  <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-widest ${question.difficultyColor.text} ${question.difficultyColor.bg} ${question.difficultyColor.border}`}>
+                  <span
+                    className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-widest ${question.difficultyColor.text} ${question.difficultyColor.bg} ${question.difficultyColor.border}`}
+                  >
                     {question.difficulty}
                   </span>
                 </div>
-                <h2
-                  className="text-white text-2xl md:text-3xl font-black mb-3"
-                  style={{ fontFamily: "'Courier New', monospace" }}
-                >
+                <h2 className="text-white text-2xl md:text-3xl font-black mb-3">
                   {question.title}
                 </h2>
-                <p className="text-slate-400 text-sm leading-relaxed font-sans max-w-2xl">
+                <p className="text-white text-sm leading-relaxed font-sans max-w-2xl">
                   {question.description}
                 </p>
               </div>
 
               {/* Constraints */}
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/6 shrink-0 min-w-[180px]">
-                <p className="text-[9px] uppercase tracking-[0.2em] text-slate-600 font-bold mb-3">Constraints</p>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-white font-bold mb-3">
+                  Constraints
+                </p>
                 <ul className="space-y-2">
                   {question.constraints.map((c, i) => (
-                    <li key={i} className="flex items-start gap-2 text-[11px] font-mono text-slate-400">
-                      <ChevronRight size={10} className="text-rose-500 mt-0.5 shrink-0" />
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-[11px]  text-white"
+                    >
+                      <ChevronRight
+                        size={10}
+                        className="text-rose-500 mt-0.5 shrink-0"
+                      />
                       {c}
                     </li>
                   ))}
@@ -538,7 +646,12 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
               label="AI Opponent"
               icon={Cpu}
               color="text-rose-400"
-              code={aiCode || (battling ? "" : "// AI is waiting for the battle to start...\n")}
+              code={
+                aiCode ||
+                (battling
+                  ? ""
+                  : "// AI is waiting for the battle to start...\n")
+              }
               readOnly
               isTyping={aiTyping}
             />
@@ -565,7 +678,9 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
             {!battling && (
               <motion.div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100"
-                style={{ background: "linear-gradient(135deg, #e11d48, #9333ea)" }}
+                style={{
+                  background: "linear-gradient(135deg, #e11d48, #9333ea)",
+                }}
                 transition={{ duration: 0.2 }}
               />
             )}
@@ -590,8 +705,7 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
             disabled={battling}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2.5 px-5 py-3.5 rounded-xl bg-white/4 border border-white/8 text-slate-400 hover:text-white hover:border-white/16 transition-colors text-xs font-bold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ fontFamily: "'Courier New', monospace" }}
+            className="flex items-center gap-2.5 px-5 py-3.5 rounded-xl bg-white/4 border border-white/8 text-white hover:text-white hover:border-white/16 transition-colors text-xs font-bold uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <RefreshCcw size={13} />
             New Question
@@ -609,7 +723,7 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
                 transition={{ repeat: Infinity, duration: 0.8 }}
                 className="w-2 h-2 bg-amber-400 rounded-full"
               />
-              <span className="text-[11px] text-amber-400 font-mono font-bold uppercase tracking-widest">
+              <span className="text-[11px] text-amber-400  font-bold uppercase tracking-widest">
                 {formatTime(elapsed)}
               </span>
             </motion.div>
@@ -629,17 +743,34 @@ if (Math.random() < 0.08) await new Promise((r) => setTimeout(r, 600));    }
           className="grid sm:grid-cols-3 gap-4 mt-4"
         >
           {[
-            { icon: Zap,    label: "Speed matters",   tip: "AI types at ~45ms/char. Race to finish first." },
-            { icon: Trophy, label: "Win condition",    tip: "Submit a working solution before AI completes." },
-            { icon: Bot,    label: "AI behavior",      tip: "AI occasionally pauses to 'think'. Use it." },
+            {
+              icon: Zap,
+              label: "Speed matters",
+              tip: "AI types at ~45ms/char. Race to finish first.",
+            },
+            {
+              icon: Trophy,
+              label: "Win condition",
+              tip: "Submit a working solution before AI completes.",
+            },
+            {
+              icon: Bot,
+              label: "AI behavior",
+              tip: "AI occasionally pauses to 'think'. Use it.",
+            },
           ].map(({ icon: Icon, label, tip }) => (
-            <div key={label} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex gap-3">
+            <div
+              key={label}
+              className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex gap-3"
+            >
               <Icon size={14} className="text-indigo-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1" style={{ fontFamily: "'Courier New', monospace" }}>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white mb-1">
                   {label}
                 </p>
-                <p className="text-[11px] text-slate-600 font-sans leading-relaxed">{tip}</p>
+                <p className="text-[11px] text-white font-sans leading-relaxed">
+                  {tip}
+                </p>
               </div>
             </div>
           ))}

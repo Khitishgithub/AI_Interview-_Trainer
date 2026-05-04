@@ -18,7 +18,7 @@ const InterviewItemCard = ({ interview }) => {
             <h2 className='text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 group-hover:from-indigo-300 group-hover:to-purple-300 transition-all duration-300'>
               {interview?.jobPosition}
             </h2>
-            <div className='flex items-center gap-2 text-slate-400'>
+            <div className='flex items-center gap-2 text-white'>
               <Briefcase size={14} className="text-indigo-400" />
               <span className='text-xs font-medium tracking-wide uppercase'>
                 {interview?.jobExperience} Yrs Experience
@@ -27,13 +27,13 @@ const InterviewItemCard = ({ interview }) => {
           </div>
           
           {/* Subtle Icon Badge */}
-          <div className="p-2 bg-slate-800/50 rounded-lg border border-slate-700 text-slate-400 group-hover:text-indigo-400 transition-colors">
+          <div className="p-2 bg-slate-800/50 rounded-lg border border-slate-700 text-white group-hover:text-indigo-400 transition-colors">
             <ArrowUpRight size={18} />
           </div>
         </div>
 
         {/* Date Section */}
-        <div className='flex items-center gap-2 text-slate-500 mb-6'>
+        <div className='flex items-center gap-2 text-white mb-6'>
           <CalendarDays size={14} />
           <span className='text-[11px]'>Recorded: {interview.createdAt}</span>
         </div>
@@ -53,7 +53,7 @@ const InterviewItemCard = ({ interview }) => {
             <Button 
               size="sm" 
               variant="outline" 
-              className="w-full border-slate-700 bg-transparent text-slate-300 font-bold rounded-xl  hover:border-slate-600 transition-all flex gap-2"
+              className="w-full border-slate-700 bg-transparent text-white font-bold rounded-xl  hover:border-slate-600 transition-all flex gap-2"
             >
               <ClipboardCheck size={14} /> Feedback
             </Button>

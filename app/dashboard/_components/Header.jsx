@@ -47,7 +47,7 @@ const Header = () => {
                   <Link
                     href={href}
                     className={`text-sm font-bold uppercase tracking-widest transition-all duration-300 px-1
-                      ${isActive ? "text-indigo-400" : "text-slate-400 hover:text-white"}`}
+                      ${isActive ? "text-indigo-400" : "text-white hover:text-white"}`}
                   >
                     {label}
                   </Link>

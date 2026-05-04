@@ -107,11 +107,11 @@ const AddNewInterview = () => {
           <div className="text-center">
             <p
               className="text-white text-sm font-black uppercase tracking-widest group-hover:text-indigo-300 transition-colors"
-              style={{ fontFamily: "'Courier New', monospace" }}
+              
             >
               New Interview
             </p>
-            <p className="text-slate-600 text-[10px] font-mono mt-0.5">Start a session</p>
+            <p className="text-white text-[10px]  mt-0.5">Start a session</p>
           </div>
         </div>
         {/* Bottom shimmer */}
@@ -120,7 +120,7 @@ const AddNewInterview = () => {
 
       {/* ── Dialog ── */}
       <Dialog open={openDialog} onOpenChange={(v) => !v && handleClose()}>
-        <DialogContent className="max-w-2xl bg-[#07070f] border border-white/8 text-slate-200 rounded-3xl shadow-2xl shadow-black/60 p-0 overflow-hidden">
+        <DialogContent className="max-w-2xl bg-[#07070f] border border-white/8 text-white rounded-3xl shadow-2xl shadow-black/60 p-0 overflow-hidden">
 
           {/* Top gradient bar */}
           <div className="h-[2px] w-full shrink-0" style={{ backgroundImage: "linear-gradient(90deg, #4f46e5, #7c3aed, #db2777)" }} />
@@ -135,11 +135,11 @@ const AddNewInterview = () => {
               </div>
               <DialogTitle
                 className="text-white text-2xl font-black"
-                style={{ fontFamily: "'Courier New', monospace" }}
+                
               >
                 Configure Session
               </DialogTitle>
-              <DialogDescription className="text-slate-500 text-xs font-mono mt-1">
+              <DialogDescription className="text-white text-xs  mt-1">
                 Choose how to generate your interview questions
               </DialogDescription>
             </DialogHeader>
@@ -157,9 +157,9 @@ const AddNewInterview = () => {
                   className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all ${
                     mode === key
                       ? "border-indigo-500/50 bg-indigo-500/10 text-indigo-300"
-                      : "border-white/6 bg-white/[0.02] text-slate-500 hover:border-white/12 hover:text-slate-400"
+                      : "border-white/6 bg-white/[0.02] text-white hover:border-white/12 hover:text-white"
                   }`}
-                  style={{ fontFamily: "'Courier New', monospace" }}
+                  
                 >
                   <Icon size={13} />
                   {label}
@@ -183,7 +183,7 @@ const AddNewInterview = () => {
                       { label: "Job Description / Tech Stack", placeholder: "Ex. React, Next.js, MySQL...", value: jobDesc, setter: setJobDesc, type: "textarea" },
                     ].map(({ label, placeholder, value, setter, type }) => (
                       <div key={label}>
-                        <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 block mb-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-white block mb-1.5">
                           {label}
                         </label>
                         {type === "input" ? (
@@ -192,7 +192,7 @@ const AddNewInterview = () => {
                             required
                             value={value}
                             onChange={(e) => setter(e.target.value)}
-                            className="bg-white/[0.03] border-white/8 text-slate-200 placeholder:text-slate-600 rounded-xl focus:border-indigo-500/50 focus:ring-0 font-mono text-sm"
+                            className="bg-white/[0.03] border-white/8 text-white placeholder:text-white rounded-xl focus:border-indigo-500/50 focus:ring-0  text-sm"
                           />
                         ) : (
                           <Textarea
@@ -200,14 +200,14 @@ const AddNewInterview = () => {
                             required
                             value={value}
                             onChange={(e) => setter(e.target.value)}
-                            className="bg-white/[0.03] border-white/8 text-slate-200 placeholder:text-slate-600 rounded-xl focus:border-indigo-500/50 focus:ring-0 font-mono text-sm resize-none"
+                            className="bg-white/[0.03] border-white/8 text-white placeholder:text-white rounded-xl focus:border-indigo-500/50 focus:ring-0  text-sm resize-none"
                             rows={3}
                           />
                         )}
                       </div>
                     ))}
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 block mb-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-white block mb-1.5">
                         Years of Experience
                       </label>
                       <Input
@@ -217,7 +217,7 @@ const AddNewInterview = () => {
                         required
                         value={jobExperience}
                         onChange={(e) => setJobExperience(e.target.value)}
-                        className="bg-white/[0.03] border-white/8 text-slate-200 placeholder:text-slate-600 rounded-xl focus:border-indigo-500/50 focus:ring-0 font-mono text-sm w-32"
+                        className="bg-white/[0.03] border-white/8 text-white placeholder:text-white rounded-xl focus:border-indigo-500/50 focus:ring-0  text-sm w-32"
                       />
                     </div>
                   </motion.div>
@@ -246,10 +246,10 @@ const AddNewInterview = () => {
                         <div className="w-14 h-14 rounded-2xl bg-white/4 border border-white/8 flex items-center justify-center mx-auto mb-4">
                           <Upload size={22} className="text-indigo-400" />
                         </div>
-                        <p className="text-white text-sm font-black uppercase tracking-widest mb-1" style={{ fontFamily: "'Courier New', monospace" }}>
+                        <p className="text-white text-sm font-black uppercase tracking-widest mb-1" >
                           Drop Resume Here
                         </p>
-                        <p className="text-slate-600 text-[11px] font-mono">
+                        <p className="text-white text-[11px] ">
                           or click to browse — PDF only
                         </p>
                         <input ref={fileInputRef} type="file" accept="application/pdf" className="hidden"
@@ -261,20 +261,20 @@ const AddNewInterview = () => {
                           <FileText size={16} className="text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm font-black truncate" style={{ fontFamily: "'Courier New', monospace" }}>
+                          <p className="text-white text-sm font-black truncate" >
                             {resumeFile.name}
                           </p>
-                          <p className="text-emerald-600 text-[10px] font-mono mt-0.5">
+                          <p className="text-emerald-600 text-[10px]  mt-0.5">
                             {(resumeFile.size / 1024).toFixed(0)} KB · Ready
                           </p>
                         </div>
                         <button type="button" onClick={() => setResumeFile(null)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors">
+                          className="p-1.5 rounded-lg text-white hover:text-rose-400 hover:bg-rose-500/10 transition-colors">
                           <X size={14} />
                         </button>
                       </div>
                     )}
-                    <p className="text-[11px] text-slate-600 font-mono mt-3">
+                    <p className="text-[11px] text-white  mt-3">
                       Questions will be generated from your resume content.
                     </p>
                   </motion.div>
@@ -286,8 +286,8 @@ const AddNewInterview = () => {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-5 py-2.5 rounded-xl bg-white/4 border border-white/8 text-slate-400 hover:text-white hover:border-white/16 transition-colors text-xs font-bold uppercase tracking-widest"
-                  style={{ fontFamily: "'Courier New', monospace" }}
+                  className="px-5 py-2.5 rounded-xl bg-white/4 border border-white/8 text-white hover:text-white hover:border-white/16 transition-colors text-xs font-bold uppercase tracking-widest"
+                  
                 >
                   Cancel
                 </button>

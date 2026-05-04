@@ -9,7 +9,7 @@ import { Terminal, Cpu, Zap } from "lucide-react";
 
 const Dashboard = () => {
   return (
-    <div className="relative min-h-screen bg-[#04040a] text-slate-200 overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#04040a] text-white overflow-x-hidden">
       {/* Grid bg */}
       <div
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.04]"
@@ -50,7 +50,7 @@ const Dashboard = () => {
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
               Session Active
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white uppercase tracking-widest">
               <Terminal size={10} />
               AI Interview Lab
             </div>
@@ -62,8 +62,8 @@ const Dashboard = () => {
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none mb-3"
-                style={{ fontFamily: "'Courier New', monospace" }}
+                     className="text-6xl font-black uppercase italic tracking-tighter leading-none mb-3"
+                
               >
                 <span className="text-white">YOUR</span>
                 <br />
@@ -81,7 +81,7 @@ const Dashboard = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="text-slate-500 text-sm font-mono tracking-widest"
+                className="text-white text-sm  tracking-widest"
               >
                 AI-POWERED MOCK INTERVIEWS · REAL-TIME FEEDBACK
               </motion.p>
@@ -102,7 +102,7 @@ const Dashboard = () => {
             </div>
             <h2
               className="text-white text-base font-black uppercase tracking-wider"
-              style={{ fontFamily: "'Courier New', monospace" }}
+              
             >
               New Session
             </h2>

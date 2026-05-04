@@ -117,7 +117,7 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
           }}
         />
       </div>
-      <Button variant="outline" className="my-10" onClick={StartStopRecording}>
+      <Button variant="outline" className="my-10 text-black" onClick={StartStopRecording}>
         {isRecording ? stopSpeechToText : startSpeechToText}
 
         {isRecording ? (

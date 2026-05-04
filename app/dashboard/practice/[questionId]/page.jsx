@@ -164,7 +164,7 @@ export default function QuestionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white font-mono flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0f] text-white  flex flex-col">
       {/* ── Top bar ── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#0d0d14]">
         <div className="flex items-center gap-3">

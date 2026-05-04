@@ -108,10 +108,10 @@ function StatCard({ icon: Icon, label, value, color, animated }) {
   return (
     <div className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border ${color.border} ${color.bg} backdrop-blur-sm`}>
       <Icon size={20} className={color.color} />
-      <span className={`text-2xl font-black font-mono ${color.color}`}>
+      <span className={`text-2xl font-black  ${color.color}`}>
         {animated ? <Counter to={value} /> : value}
       </span>
-      <span className="text-[9px] uppercase tracking-[0.2em] text-slate-500">{label}</span>
+      <span className="text-[9px] uppercase tracking-[0.2em] text-white">{label}</span>
     </div>
   );
 }
@@ -167,7 +167,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
   };
 
   return (
-    <div className="relative min-h-screen bg-[#04040a] text-slate-200 overflow-x-hidden selection:bg-indigo-500/30">
+    <div className="relative min-h-screen bg-[#04040a] text-white overflow-x-hidden selection:bg-indigo-500/30">
       <CursorGlow />
       <Scanlines />
 
@@ -204,7 +204,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
               Neural Link Active
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white uppercase tracking-widest">
               <Terminal size={10} />
               v2.4.1
             </div>
@@ -217,14 +217,14 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className={`text-6xl md:text-8xl font-black uppercase italic tracking-tighter leading-none mb-3 ${glitch ? "animate-pulse" : ""}`}
-                style={{ fontFamily: "'Courier New', monospace" }}
+                className={`text-6xl  font-black uppercase italic tracking-tighter leading-none mb-3 ${glitch ? "animate-pulse" : ""}`}
+                
               >
                 <span className="text-white">PRACTICE</span>
                 <br />
                 <span
                   className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: "linear-gradient(135deg, #818cf8, #a78bfa, #ec4899)" }}
+                  style={{ backgroundImage: "linear-gradient(175deg, #818cf8, #a78bfa, #ec4899)" }}
                 >
                   ARENA
                 </span>
@@ -233,7 +233,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="text-slate-500 text-sm font-mono tracking-widest max-w-md"
+                className="text-white text-sm  tracking-widest max-w-md"
               >
                 AI-GENERATED CODING CHALLENGES · MULTI-PLATFORM · ADAPTIVE DIFFICULTY
               </motion.p>
@@ -327,7 +327,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
 
               {/* Tags */}
               <div className="flex flex-wrap items-start gap-3">
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 mt-1 w-20 shrink-0">FOCUS</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white mt-1 w-20 shrink-0">FOCUS</span>
                 <div className="flex flex-wrap gap-2">
                   {TAGS.map(t => (
                     <motion.button
@@ -338,7 +338,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all duration-200 ${
                         tag === t
                           ? "bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/30"
-                          : "bg-white/3 border-white/8 text-slate-500 hover:border-indigo-500/40 hover:text-indigo-300"
+                          : "bg-white/3 border-white/8 text-white hover:border-indigo-500/40 hover:text-indigo-300"
                       }`}
                     >
                       <Hash size={9} />
@@ -358,7 +358,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                   <Target size={28} className="text-indigo-400" />
                 </div>
               </div>
-              <p className="text-[9px] text-slate-600 uppercase tracking-widest text-center max-w-[100px] leading-relaxed">
+              <p className="text-[9px] text-white uppercase tracking-widest text-center max-w-[100px] leading-relaxed">
                 Configure<br />parameters<br />& deploy
               </p>
             </div>
@@ -372,7 +372,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-sm"
+              className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400  text-sm"
             >
               <span className="w-2 h-2 bg-rose-400 rounded-full animate-pulse" />
               {error}
@@ -397,8 +397,8 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 <div className="absolute -inset-3 rounded-[30px] border border-dashed border-white/5" />
               </div>
               <div className="text-center">
-                <p className="font-mono text-xs uppercase tracking-[0.3em] mb-1">Awaiting Transmission</p>
-                <p className="text-[11px] text-slate-600">Hit generate to spawn challenges</p>
+                <p className=" text-xs uppercase tracking-[0.3em] mb-1">Awaiting Transmission</p>
+                <p className="text-[11px] text-white">Hit generate to spawn challenges</p>
               </div>
             </motion.div>
           ) : loading ? (
@@ -435,7 +435,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
 function FilterRow({ label, options, value, onChange, colorFn }) {
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600 w-20 shrink-0">{label}</span>
+      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white w-20 shrink-0">{label}</span>
       <div className="flex flex-wrap gap-2">
         {options.map(o => (
           <motion.button
@@ -446,7 +446,7 @@ function FilterRow({ label, options, value, onChange, colorFn }) {
             className={`px-4 py-1.5 rounded-xl text-[11px] font-bold border transition-all duration-200 ${
               value === o
                 ? "bg-white text-black border-white shadow-lg shadow-white/10"
-                : `bg-transparent border-white/8 hover:border-white/25 ${colorFn ? colorFn(o) || "text-slate-400" : "text-slate-400"} hover:text-white`
+                : `bg-transparent border-white/8 hover:border-white/25 ${colorFn ? colorFn(o) || "text-white" : "text-white"} hover:text-white`
             }`}
           >
             {o}
@@ -545,13 +545,13 @@ function QuestionCard({ question, index }) {
 
           {/* Title */}
           <h3 className="relative text-base font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors leading-snug line-clamp-2"
-            style={{ fontFamily: "'Courier New', monospace" }}
+            
           >
             {question.title}
           </h3>
 
           {/* Description */}
-          <p className="text-xs text-slate-500 line-clamp-3 mb-5 leading-relaxed font-sans">
+          <p className="text-xs text-white line-clamp-3 mb-5 leading-relaxed font-sans">
             {question.description}
           </p>
 
@@ -567,14 +567,14 @@ function QuestionCard({ question, index }) {
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-4 border-t border-white/5">
-            <div className="flex items-center gap-1.5 text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 text-[10px] text-white font-bold uppercase tracking-widest">
               <Terminal size={10} />
               {question.language}
             </div>
             <motion.div
               animate={{ x: hovered ? 3 : 0 }}
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                hovered ? "bg-indigo-500 text-white" : "bg-white/5 text-slate-500"
+                hovered ? "bg-indigo-500 text-white" : "bg-white/5 text-white"
               }`}
             >
               <ChevronRight size={14} />
