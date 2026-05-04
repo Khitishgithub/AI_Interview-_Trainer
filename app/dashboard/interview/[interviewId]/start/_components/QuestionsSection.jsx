@@ -13,18 +13,19 @@ const QuestionsSection = ({mockInterviewQuestions,activeQuestionIndex}) => {
     }
 
   }
+  console.log("Question",mockInterviewQuestions?.questions)
   return mockInterviewQuestions&& (
     <div className='p-5 border rounded-lg'>
       <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5'>
-        {mockInterviewQuestions&&mockInterviewQuestions.map((question,index)=>(
+        {mockInterviewQuestions?.questions && mockInterviewQuestions?.questions.map((question,index)=>(
           <h2 className={`p-2 bg-secondary rounded-full text-xs md:text-sm text-center cursor-pointer ${activeQuestionIndex==index&&'bg-primary text-black'}`}>Question #{index+1}</h2>
         ))}
        
 
       </div>
 
-      <h2 className='my-5 text-md md:text-lg'>{mockInterviewQuestions[activeQuestionIndex]?.question}</h2>
-      <Volume2 className='cursor-pointer' onClick={()=>textToSpeech(mockInterviewQuestions[activeQuestionIndex]?.question)}/>
+      <h2 className='my-5 text-md md:text-lg'>{ mockInterviewQuestions && mockInterviewQuestions?.questions[activeQuestionIndex]?.question}</h2>
+      <Volume2 className='cursor-pointer' onClick={()=>textToSpeech(mockInterviewQuestions?.questions[activeQuestionIndex]?.question)}/>
       <div className='border rounded-lg p-5 bg-blue-100 mt-20'>
         <h2 className='flex gap-2 items-center text-blue-700'>
           <Lightbulb  />

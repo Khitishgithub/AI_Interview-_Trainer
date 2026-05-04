@@ -12,13 +12,9 @@ const Dashboard = () => {
         <AddNewInterview/>
       </div>
       <div>
-        <InterviewList/>
-
-      
+        <InterviewList/>      
       </div>
-      
-    
-      
+            
     </div>
   );
 }

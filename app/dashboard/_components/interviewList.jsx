@@ -16,8 +16,6 @@ const InterviewList = () => {
 
     },[user])
 
-
-
     const GetInterviewList=async()=>{
         const result= await db.select()
         .from(mockInterview)

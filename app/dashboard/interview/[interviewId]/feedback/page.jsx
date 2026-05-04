@@ -1,102 +1,151 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
+import Webcam from "react-webcam";
+import useSpeechToText from "react-hook-speech-to-text";
+import { Mic, MicOff } from "lucide-react";
+import { toast } from "sonner";
 import { db } from "@/utils/db";
 import { UserAnswer } from "@/utils/schema";
-import { eq } from "drizzle-orm";
-import React, { useEffect, useState } from "react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronDown, ChevronsUpDown } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import moment from "moment";
+import { sendPrompt } from "@/utils/GeminiAIModel";
 
-const Feedback = ({ params }) => {
-  const [feedbackList, setFeedbackList] = useState([]);
-  const router = useRouter();
+const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, interviewData }) => {
+  const [userAnswer, setUserAnswer] = useState("");
+  const { user } = useUser();
+  const [loading, setLoading] = useState(false);
+  // 🔧 FIX 2: ref to prevent the useEffect from double-saving
+  const justStoppedRef = useRef(false);
+
+  const {
+    error,
+    interimResult,
+    isRecording,
+    results,
+    setResults,
+    startSpeechToText,
+    stopSpeechToText,
+  } = useSpeechToText({
+    continuous: true,
+    useLegacyResults: false,
+  });
 
   useEffect(() => {
-    Getfeedback();
-  }, []);
+    results.forEach((result) => {
+      setUserAnswer((prevAns) => prevAns + result?.transcript);
+    });
+  }, [results]);
 
-  const Getfeedback = async () => {
-    const result = await db
-      .select()
-      .from(UserAnswer)
-      .where(eq(UserAnswer.mockIdRef, params.interviewId))
-      .orderBy(UserAnswer.id);
-    console.log(result);
-    setFeedbackList(result);
+  // 🔧 FIX 2: only save when we explicitly stopped recording
+  useEffect(() => {
+    if (!isRecording && userAnswer.length > 10 && justStoppedRef.current) {
+      justStoppedRef.current = false;
+      UpdateUserAnswer();
+    }
+  }, [isRecording, userAnswer]);
+
+  const StartStopRecording = () => {
+    if (isRecording) {
+      justStoppedRef.current = true; // mark intentional stop
+      stopSpeechToText();
+    } else {
+      setUserAnswer(""); // clear previous answer on new recording
+      setResults([]);
+      startSpeechToText();
+    }
+  };
+
+  const UpdateUserAnswer = async () => {
+    if (loading) return;
+    setLoading(true);
+    console.log("Saving answer:", userAnswer);
+
+    const feedbackPrompt = `
+      Question: ${mockInterviewQuestions?.questions[activeQuestionIndex]?.question},
+      User Answer: ${userAnswer},
+      Depends on question and user answer for given interview question
+      please give us rating for answer and feedback as area of improvement if any
+      in just 3 to 5 lines to improve it in JSON format with rating field and feedback field.
+      Return ONLY valid JSON, no markdown, no backticks.
+      Example: {"rating": "7/10", "feedback": "Good answer but could improve on..."}
+    `;
+
+    try {
+      const result = await sendPrompt(feedbackPrompt);
+
+      // 🔧 FIX 3: strip ALL markdown fences before parsing
+      const cleaned = result
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*/g, "")
+        .trim();
+
+      const JsonFeedbackResp = JSON.parse(cleaned);
+      console.log("Feedback:", JsonFeedbackResp);
+
+      // 🔧 FIX 1: use mockInterviewQuestions?.questions[i] (not [i] directly)
+      const resp = await db.insert(UserAnswer).values({
+        mockIdRef: interviewData?.mockId,
+        question: mockInterviewQuestions?.questions[activeQuestionIndex]?.question,
+        correctAns: mockInterviewQuestions?.questions[activeQuestionIndex]?.answer,
+        feedback: JsonFeedbackResp?.feedback,
+        rating: JsonFeedbackResp?.rating,
+        userAns: userAnswer,
+        userEmail: user?.primaryEmailAddress?.emailAddress,
+        createdAt: moment().format("DD-MM-YYYY"),
+      });
+
+      if (resp) {
+        toast("User Answer recorded successfully!");
+        setUserAnswer("");
+        setResults([]);
+      }
+    } catch (e) {
+      console.error("Failed to save answer:", e);
+      toast("Error saving your answer, please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <div className="p-10">
-        {feedbackList?.length == 0 ? (
-          <h2 className="font-bold text-xl text-gray-500">
-            No Interview Feedback Record Found
+    <div className="flex items-center justify-center flex-col">
+      <div className="flex flex-col justify-center items-center bg-black">
+        <Image src={"/webcam_logo.png"} width={200} height={150} alt="Webcam" />
+        <Webcam
+          mirrored={true}
+          style={{ height: 300, width: "100%", zIndex: 10 }}
+        />
+      </div>
+
+      {/* 🔧 FIX 4: show a string label, not a function reference */}
+      <Button
+        variant="outline"
+        className="my-10"
+        onClick={StartStopRecording}
+        disabled={loading}
+      >
+        {isRecording ? (
+          <h2 className="text-red-600 flex gap-2 items-center">
+            <MicOff className="h-4 w-4" /> Stop Recording...
           </h2>
         ) : (
-          <>
-            <h2 className="text-3xl font-bold text-green-500">
-              Congratulation👍
-            </h2>
-            <h2 className="font-bold text-2xl">
-            Here’s some feedback from your interview.
-            </h2>
-            <h2 className="text-cyan-500 text-lg my-3">
-              Your overall interview rating :<strong>7/10</strong>
-            </h2>
-            <h2 className="text-sm text-gray-500">
-              Find below interview question with correct answer , Your answer
-              and feedback for improvement.
-            </h2>
-            {feedbackList &&
-              feedbackList.map((item, index) => (
-                <Collapsible key={index} className="mt-7">
-                  <CollapsibleTrigger className="p-2 bg-secondary rounded-lg my-2 text-left flex justify-between gap-7 w-full">
-                    {item.question}
-                    <ChevronsUpDown className="h-5 w-5" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="flex flex-col gap-2">
-                      <h2 className="text-red-500 p-2 border rounded-lg">
-                        <strong>Rating:</strong>
-                        {item.rating}
-                      </h2>
-                      <h2 className="p-2 border rounded-lg bg-red-50 text-sm text-red-800">
-                        <strong>Your Answer: </strong>
-                        {item.userAns}
-                      </h2>
-                      <h2 className="p-2 border rounded-lg bg-green-50 text-sm text-green-800">
-                        <strong>Correct Answer: </strong>
-                        {item.correctAns}
-                      </h2>
-                      <h2 className="p-2 border rounded-lg bg-blue-50 text-sm text-blue-800">
-                        <strong>Feedback: </strong>
-                        {item.feedback}
-                      </h2>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              ))}
-          </>
+          <h2 className="flex gap-2 items-center">
+            <Mic className="h-4 w-4" />
+            {loading ? "Saving..." : "Record Answer"}
+          </h2>
         )}
-        <Link href={"/dashboard"}>
+      </Button>
 
-        <Button
-          className="cursor-pointer"
-          // OnClick={() => router.replace("/dashboard")}
-        >
-          Go Home
-        </Button>
-        </Link>
-      </div>
+      {interimResult && (
+        <p className="text-sm text-gray-500 italic px-4 text-center">
+          {interimResult}
+        </p>
+      )}
     </div>
   );
 };
 
-export default Feedback;
+export default RecordAnswerSection;
