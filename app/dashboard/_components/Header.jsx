@@ -37,7 +37,7 @@ const Header = () => {
           </h2>
         </Link>
 
-        {/* Navigation Links */}
+ 
         <nav>
           <ul className="hidden md:flex items-center gap-8">
             {navLinks.map(({ href, label }) => {
@@ -52,7 +52,7 @@ const Header = () => {
                     {label}
                   </Link>
 
-                  {/* Underline for Active Link */}
+             
                   {isActive && (
                     <motion.div
                       layoutId="nav-underline"

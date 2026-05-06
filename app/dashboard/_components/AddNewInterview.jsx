@@ -64,8 +64,18 @@ const AddNewInterview = () => {
         const prompt = `Job position: ${jobPosition}. Job Description: ${jobDesc}. Years of Experience: ${jobExperience}. Generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answers in JSON. Return only a JSON object with a key "questions" containing an array of objects, each with "question" and "answer" fields.`;
         rawResult = await sendPrompt(prompt);
       }
-      const mockJsonResp = rawResult.replace(/```json/g, "").replace(/```/g, "").trim();
-      const parsedJson = JSON.parse(mockJsonResp);
+    let mockJsonResp = rawResult
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
+
+// Extract JSON object if model added extra text
+const jsonMatch = mockJsonResp.match(/\{[\s\S]*\}/);
+if (!jsonMatch) throw new Error("No JSON found in model response");
+mockJsonResp = jsonMatch[0];
+
+const parsedJson = JSON.parse(mockJsonResp);
+
       const resp = await db.insert(mockInterview).values({
         mockId: uuidv4(),
         jsonMockResp: mockJsonResp,
@@ -212,7 +222,7 @@ const AddNewInterview = () => {
                       </label>
                       <Input
                         placeholder="Ex. 5"
-                        type="number"
+                        // type="number"
                         max="50"
                         required
                         value={jobExperience}
@@ -296,7 +306,7 @@ const AddNewInterview = () => {
                   disabled={loading || !canSubmit}
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                   style={{
-                    fontFamily: "'Courier New', monospace",
+                    // fontFamily: "'Courier New', monospace",
                     background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
                   }}
                 >

@@ -21,7 +21,7 @@ export const UserAnswer=pgTable('userAnswer',{
   question: varchar('question').notNull(),
   correctAns:varchar('correctAns'),
   userAns:text('userAns'),
-  feeback:text('feeback'),
+  feedback: text('feedback'),
   rating:varchar('rating'),
   userEmail:varchar('userEmail'),
   createdAt: varchar('createdAt'),
