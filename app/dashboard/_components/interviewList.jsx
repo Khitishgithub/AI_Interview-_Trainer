@@ -23,7 +23,7 @@ const InterviewList = () => {
       )
       .orderBy(desc(mockInterview.id));
 
-    console.log(result);
+    // console.log(result);
     setInterviewList(result);
   };
   return (
