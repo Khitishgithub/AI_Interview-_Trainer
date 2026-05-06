@@ -3,21 +3,50 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
-  Code2, Zap, Trophy, ChevronRight, Loader2,
-  Target, Cpu, Flame, Terminal, Hexagon, Star,
-  Shield, Swords, Clock, Hash
+  Code2,
+  Zap,
+  Trophy,
+  ChevronRight,
+  Loader2,
+  Target,
+  Cpu,
+  Flame,
+  Terminal,
+  Hexagon,
+  Star,
+  Shield,
+  Swords,
+  Clock,
+  Hash,
+  RotateCcw,
 } from "lucide-react";
-import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
-import { sendPrompt } from "@/utils/GeminiAIModel";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
+import { sendPrompt, sendQuestions } from "@/utils/GeminiAIModel";
 import { v4 as uuidv4 } from "uuid";
+
+const CACHE_KEY = "practice_arena_cache";
 
 const PLATFORMS = ["All", "LeetCode", "Codeforces", "CodeChef"];
 const DIFFICULTIES = ["All", "Easy", "Medium", "Hard"];
 const LANGUAGES = ["All", "C++", "Java", "Python", "SQL"];
-const TAGS = ["Arrays", "Strings", "DP", "Graphs", "Trees", "Sorting", "Greedy", "Math"];
+const TAGS = [
+  "Arrays",
+  "Strings",
+  "DP",
+  "Graphs",
+  "Trees",
+  "Sorting",
+  "Greedy",
+  "Math",
+];
 
 const difficultyConfig = {
-  Easy:   {
+  Easy: {
     color: "text-emerald-300",
     border: "border-emerald-500/30",
     bg: "bg-emerald-500/10",
@@ -35,7 +64,7 @@ const difficultyConfig = {
     icon: Swords,
     label: "MEDIUM",
   },
-  Hard:   {
+  Hard: {
     color: "text-rose-300",
     border: "border-rose-500/30",
     bg: "bg-rose-500/10",
@@ -47,10 +76,46 @@ const difficultyConfig = {
 };
 
 const platformColors = {
-  LeetCode:   { color: "text-yellow-400", border: "border-yellow-500/30", bg: "bg-yellow-500/10" },
-  Codeforces: { color: "text-blue-400",   border: "border-blue-500/30",   bg: "bg-blue-500/10"   },
-  CodeChef:   { color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/10" },
+  LeetCode: {
+    color: "text-yellow-400",
+    border: "border-yellow-500/30",
+    bg: "bg-yellow-500/10",
+  },
+  Codeforces: {
+    color: "text-blue-400",
+    border: "border-blue-500/30",
+    bg: "bg-blue-500/10",
+  },
+  CodeChef: {
+    color: "text-orange-400",
+    border: "border-orange-500/30",
+    bg: "bg-orange-500/10",
+  },
 };
+
+/* ─── Cache Helpers ───────────────────────────────────────────── */
+function readCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(payload) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    /* storage full — silently ignore */
+  }
+}
+
+function clearCache() {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {}
+}
 
 /* ─── Cursor Glow ─────────────────────────────────────────────── */
 function CursorGlow() {
@@ -60,7 +125,10 @@ function CursorGlow() {
   const sy = useSpring(y, { stiffness: 100, damping: 20 });
 
   useEffect(() => {
-    const move = (e) => { x.set(e.clientX); y.set(e.clientY); };
+    const move = (e) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+    };
     window.addEventListener("mousemove", move);
     return () => window.removeEventListener("mousemove", move);
   }, []);
@@ -81,7 +149,8 @@ function Scanlines() {
     <div
       className="pointer-events-none fixed inset-0 z-[1] opacity-[0.025]"
       style={{
-        backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,1) 2px,rgba(255,255,255,1) 3px)",
+        backgroundImage:
+          "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,1) 2px,rgba(255,255,255,1) 3px)",
       }}
     />
   );
@@ -106,53 +175,128 @@ function Counter({ from = 0, to, duration = 1.2 }) {
 /* ─── Stat Card ───────────────────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, color, animated }) {
   return (
-    <div className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border ${color.border} ${color.bg} backdrop-blur-sm`}>
+    <div
+      className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border ${color.border} ${color.bg} backdrop-blur-sm`}
+    >
       <Icon size={20} className={color.color} />
-      <span className={`text-2xl font-black  ${color.color}`}>
+      <span className={`text-2xl font-black ${color.color}`}>
         {animated ? <Counter to={value} /> : value}
       </span>
-      <span className="text-[9px] uppercase tracking-[0.2em] text-white">{label}</span>
+      <span className="text-[9px] uppercase tracking-[0.2em] text-white">
+        {label}
+      </span>
     </div>
+  );
+}
+
+/* ─── Cache Badge ─────────────────────────────────────────────── */
+function CacheBadge({ cachedAt, onClear }) {
+  const timeStr = cachedAt
+    ? new Date(cachedAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-300 uppercase tracking-widest"
+    >
+      <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />
+      Cached {timeStr && `· ${timeStr}`}
+      <button
+        onClick={onClear}
+        className="ml-1 text-indigo-400 hover:text-rose-400 transition-colors"
+        title="Clear cache"
+      >
+        <RotateCcw size={10} />
+      </button>
+    </motion.div>
   );
 }
 
 /* ─── Main Page ───────────────────────────────────────────────── */
 export default function PracticePage() {
-  const [platform,   setPlatform]   = useState("All");
+  const [platform, setPlatform] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
-  const [language,   setLanguage]   = useState("All");
-  const [tag,        setTag]        = useState(null);
-  const [questions,  setQuestions]  = useState([]);
-  const [loading,    setLoading]    = useState(false);
-  const [generated,  setGenerated]  = useState(false);
-  const [error,      setError]      = useState(null);
-  const [glitch,     setGlitch]     = useState(false);
+  const [language, setLanguage] = useState("All");
+  const [tag, setTag] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [generated, setGenerated] = useState(false);
+  const [error, setError] = useState(null);
+  const [glitch, setGlitch] = useState(false);
+  const [cachedAt, setCachedAt] = useState(null);
+  const [fromCache, setFromCache] = useState(false);
+
+  /* ── Restore from cache on mount ── */
+  useEffect(() => {
+    const cached = readCache();
+    if (cached?.questions?.length) {
+      setPlatform(cached.filters.platform ?? "All");
+      setDifficulty(cached.filters.difficulty ?? "All");
+      setLanguage(cached.filters.language ?? "All");
+      setTag(cached.filters.tag ?? null);
+      setQuestions(cached.questions);
+      setGenerated(true);
+      setCachedAt(cached.cachedAt ?? null);
+      setFromCache(true);
+    }
+  }, []);
 
   const triggerGlitch = () => {
     setGlitch(true);
     setTimeout(() => setGlitch(false), 600);
   };
 
+  const handleClearCache = () => {
+    clearCache();
+    setQuestions([]);
+    setGenerated(false);
+    setFromCache(false);
+    setCachedAt(null);
+  };
+
   const generateQuestions = async () => {
     triggerGlitch();
     setLoading(true);
     setError(null);
+    setFromCache(false);
     try {
       const eff = {
-        platform:   platform   === "All" ? "LeetCode, Codeforces, and CodeChef" : platform,
-        difficulty: difficulty === "All" ? "mixed Easy, Medium, and Hard"       : difficulty,
-        language:   language   === "All" ? "C++, Java, Python, or SQL"          : language,
+        platform:
+          platform === "All" ? "LeetCode, Codeforces, and CodeChef" : platform,
+        difficulty:
+          difficulty === "All" ? "mixed Easy, Medium, and Hard" : difficulty,
+        language: language === "All" ? "C++, Java, Python, or SQL" : language,
       };
       const tagHint = tag ? ` focused on ${tag}` : "";
-      const prompt = `Generate 6 distinct coding practice problems${tagHint} in the style of ${eff.platform}. 
+      const prompt = `Generate 3 distinct coding practice problems${tagHint} in the style of ${eff.platform}. 
 Difficulty: ${eff.difficulty}. Language hint: ${eff.language}.
 Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "platform": "LeetCode|Codeforces|CodeChef", "difficulty": "Easy|Medium|Hard", "language": "${eff.language}", "tags": ["tag1","tag2"], "description": "2-3 sentence problem statement", "examples": [{"input":"...","output":"..."}], "constraints": ["..."], "starterCode": { "C++": "...", "Java": "...", "Python": "...", "SQL": "..." }, "solution": { "C++": "...", "Java": "...", "Python": "...", "SQL": "..." }, "testCases": [{"input":"...","expectedOutput":"..."}] } ] }`;
 
-      const raw    = await sendPrompt(prompt);
-      const clean  = raw.replace(/```json|```/g, "").trim();
+      const raw = await sendQuestions(prompt);
+      const clean = raw.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
-      setQuestions(parsed.questions.map(q => ({ ...q, id: q.id || uuidv4() })));
+      const newQuestions = parsed.questions.map((q) => ({
+        ...q,
+        id: q.id || uuidv4(),
+      }));
+
+      const now = Date.now();
+
+      /* ── Persist to cache ── */
+      writeCache({
+        filters: { platform, difficulty, language, tag },
+        questions: newQuestions,
+        cachedAt: now,
+      });
+
+      setQuestions(newQuestions);
       setGenerated(true);
+      setCachedAt(now);
     } catch {
       setError("SYSTEM_ERR: Neural link unstable. Retry transmission.");
     } finally {
@@ -161,9 +305,9 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
   };
 
   const stats = {
-    easy:   questions.filter(q => q.difficulty === "Easy").length,
-    medium: questions.filter(q => q.difficulty === "Medium").length,
-    hard:   questions.filter(q => q.difficulty === "Hard").length,
+    easy: questions.filter((q) => q.difficulty === "Easy").length,
+    medium: questions.filter((q) => q.difficulty === "Medium").length,
+    hard: questions.filter((q) => q.difficulty === "Hard").length,
   };
 
   return (
@@ -193,7 +337,6 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
       {/* ── HERO HEADER ── */}
       <header className="relative z-10 pt-16 pb-10 px-6 md:px-12 border-b border-white/5">
         <div className="max-w-7xl mx-auto">
-
           {/* Top label */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -208,23 +351,30 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
               <Terminal size={10} />
               v2.4.1
             </div>
+
+            <AnimatePresence>
+              {fromCache && cachedAt && (
+                <CacheBadge cachedAt={cachedAt} onClear={handleClearCache} />
+              )}
+            </AnimatePresence>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
-            {/* Title block */}
             <div>
               <motion.h1
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className={`text-6xl  font-black uppercase italic tracking-tighter leading-none mb-3 ${glitch ? "animate-pulse" : ""}`}
-                
+                className={`text-6xl font-black uppercase italic tracking-tighter leading-none mb-3 ${glitch ? "animate-pulse" : ""}`}
               >
                 <span className="text-white">PRACTICE</span>
                 <br />
                 <span
                   className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: "linear-gradient(175deg, #818cf8, #a78bfa, #ec4899)" }}
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(175deg, #818cf8, #a78bfa, #ec4899)",
+                  }}
                 >
                   ARENA
                 </span>
@@ -233,33 +383,49 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="text-white text-sm  tracking-widest max-w-md"
+                className="text-white text-sm tracking-widest max-w-md"
               >
-                AI-GENERATED CODING CHALLENGES · MULTI-PLATFORM · ADAPTIVE DIFFICULTY
+                AI-GENERATED CODING CHALLENGES · MULTI-PLATFORM · ADAPTIVE
+                DIFFICULTY
               </motion.p>
             </div>
 
-            {/* Right: stats + CTA */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
               className="flex flex-col gap-6"
             >
-              {/* Stats row */}
               {generated && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="grid grid-cols-3 gap-3"
                 >
-                  <StatCard icon={Shield} label="Easy"   value={stats.easy}   color={difficultyConfig.Easy}   animated />
-                  <StatCard icon={Swords} label="Medium" value={stats.medium} color={difficultyConfig.Medium} animated />
-                  <StatCard icon={Flame}  label="Hard"   value={stats.hard}   color={difficultyConfig.Hard}   animated />
+                  <StatCard
+                    icon={Shield}
+                    label="Easy"
+                    value={stats.easy}
+                    color={difficultyConfig.Easy}
+                    animated
+                  />
+                  <StatCard
+                    icon={Swords}
+                    label="Medium"
+                    value={stats.medium}
+                    color={difficultyConfig.Medium}
+                    animated
+                  />
+                  <StatCard
+                    icon={Flame}
+                    label="Hard"
+                    value={stats.hard}
+                    color={difficultyConfig.Hard}
+                    animated
+                  />
                 </motion.div>
               )}
 
-              {/* Generate button */}
               <motion.button
                 onClick={generateQuestions}
                 disabled={loading}
@@ -267,19 +433,31 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 whileTap={{ scale: 0.97 }}
                 className="relative group overflow-hidden px-6 py-3 rounded-2xl font-black uppercase italic tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%)",
-                  boxShadow: "0 0 40px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+                  background:
+                    "linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%)",
+                  boxShadow:
+                    "0 0 40px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
                 }}
               >
-                {/* shimmer */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)" }}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{
+                    background:
+                      "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)",
+                  }}
                 />
                 <span className="relative flex items-center gap-3 text-base">
-                  {loading
-                    ? <><Loader2 size={22} className="animate-spin" /> INITIALIZING...</>
-                    : <><Zap size={22} className="fill-current" /> GENERATE CHALLENGES</>
-                  }
+                  {loading ? (
+                    <>
+                      <Loader2 size={22} className="animate-spin" />{" "}
+                      INITIALIZING...
+                    </>
+                  ) : (
+                    <>
+                      <Zap size={22} className="fill-current" /> GENERATE
+                      CHALLENGES
+                    </>
+                  )}
                 </span>
               </motion.button>
             </motion.div>
@@ -288,22 +466,26 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
       </header>
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-12 space-y-12">
-
-        {/* ── FILTER PANEL ── */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className="relative rounded-3xl border border-white/8 overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(99,102,241,0.04) 100%)",
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(99,102,241,0.04) 100%)",
             backdropFilter: "blur(20px)",
           }}
         >
-          {/* Top accent bar */}
-          <div className="h-[2px] w-full" style={{ backgroundImage: "linear-gradient(90deg, #4f46e5, #7c3aed, #db2777)" }} />
+          <div
+            className="h-[2px] w-full"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, #4f46e5, #7c3aed, #db2777)",
+            }}
+          />
 
-          <div className="p-8 grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-10 ">
+          <div className="p-8 grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-10">
             <div className="space-y-7">
               <FilterRow
                 label="PLATFORM"
@@ -316,7 +498,15 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 options={DIFFICULTIES}
                 value={difficulty}
                 onChange={setDifficulty}
-                colorFn={o => o === "Easy" ? "text-emerald-400" : o === "Medium" ? "text-amber-400" : o === "Hard" ? "text-rose-400" : ""}
+                colorFn={(o) =>
+                  o === "Easy"
+                    ? "text-emerald-400"
+                    : o === "Medium"
+                      ? "text-amber-400"
+                      : o === "Hard"
+                        ? "text-rose-400"
+                        : ""
+                }
               />
               <FilterRow
                 label="LANG"
@@ -325,11 +515,12 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 onChange={setLanguage}
               />
 
-              {/* Tags */}
               <div className="flex flex-wrap items-start gap-3">
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white mt-1 w-20 shrink-0">FOCUS</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white mt-1 w-20 shrink-0">
+                  FOCUS
+                </span>
                 <div className="flex flex-wrap gap-2">
-                  {TAGS.map(t => (
+                  {TAGS.map((t) => (
                     <motion.button
                       key={t}
                       onClick={() => setTag(tag === t ? null : t)}
@@ -349,21 +540,57 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
               </div>
             </div>
 
-            {/* Side decoration */}
             <div className="hidden xl:flex flex-col items-center justify-center gap-4 pl-10 border-l border-white/5">
               <div className="relative w-24 h-24">
-                <div className="absolute inset-0 rounded-full border border-indigo-500/20 animate-spin" style={{ animationDuration: "8s" }} />
-                <div className="absolute inset-3 rounded-full border border-purple-500/20 animate-spin" style={{ animationDuration: "5s", animationDirection: "reverse" }} />
+                <div
+                  className="absolute inset-0 rounded-full border border-indigo-500/20 animate-spin"
+                  style={{ animationDuration: "8s" }}
+                />
+                <div
+                  className="absolute inset-3 rounded-full border border-purple-500/20 animate-spin"
+                  style={{
+                    animationDuration: "5s",
+                    animationDirection: "reverse",
+                  }}
+                />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Target size={28} className="text-indigo-400" />
                 </div>
               </div>
               <p className="text-[9px] text-white uppercase tracking-widest text-center max-w-[100px] leading-relaxed">
-                Configure<br />parameters<br />& deploy
+                Configure
+                <br />
+                parameters
+                <br />& deploy
               </p>
             </div>
           </div>
         </motion.section>
+
+        {/* ── CACHED FILTER SUMMARY ── */}
+        <AnimatePresence>
+          {fromCache && generated && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-wrap items-center gap-3 px-5 py-3 rounded-2xl bg-white/[0.02] border border-indigo-500/15"
+            >
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-indigo-400">
+                Loaded from cache ·
+              </span>
+              <CachedFilterPill label="Platform" value={platform} />
+              <CachedFilterPill label="Tier" value={difficulty} />
+              <CachedFilterPill label="Lang" value={language} />
+              {tag && <CachedFilterPill label="Focus" value={tag} />}
+              <span className="text-[9px] text-white ml-auto">
+                Change filters &amp; hit{" "}
+                <span className="text-indigo-400 font-bold">Generate</span> to
+                refresh
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── ERROR ── */}
         <AnimatePresence>
@@ -372,7 +599,7 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400  text-sm"
+              className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm"
             >
               <span className="w-2 h-2 bg-rose-400 rounded-full animate-pulse" />
               {error}
@@ -397,8 +624,12 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
                 <div className="absolute -inset-3 rounded-[30px] border border-dashed border-white/5" />
               </div>
               <div className="text-center">
-                <p className=" text-xs uppercase tracking-[0.3em] mb-1">Awaiting Transmission</p>
-                <p className="text-[11px] text-white">Hit generate to spawn challenges</p>
+                <p className="text-xs uppercase tracking-[0.3em] mb-1">
+                  Awaiting Transmission
+                </p>
+                <p className="text-[11px] text-white">
+                  Hit generate to spawn challenges
+                </p>
               </div>
             </motion.div>
           ) : loading ? (
@@ -431,13 +662,24 @@ Return ONLY a JSON object: { "questions": [ { "id": "uuid", "title": "string", "
   );
 }
 
+function CachedFilterPill({ label, value }) {
+  return (
+    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/8 border border-indigo-500/15 text-[9px] font-bold uppercase tracking-widest text-indigo-300">
+      <span className="text-white/40">{label}:</span>
+      {value}
+    </span>
+  );
+}
+
 /* ─── Filter Row ──────────────────────────────────────────────── */
 function FilterRow({ label, options, value, onChange, colorFn }) {
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white w-20 shrink-0">{label}</span>
+      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white w-20 shrink-0">
+        {label}
+      </span>
       <div className="flex flex-wrap gap-2">
-        {options.map(o => (
+        {options.map((o) => (
           <motion.button
             key={o}
             onClick={() => onChange(o)}
@@ -477,10 +719,13 @@ function SkeletonCard({ delay }) {
         <div className="h-5 w-16 bg-white/5 rounded-full animate-pulse" />
         <div className="h-5 w-12 bg-white/5 rounded-full animate-pulse" />
       </div>
-      {/* sweep */}
       <div
         className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite]"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)", animationDelay: `${delay}s` }}
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)",
+          animationDelay: `${delay}s`,
+        }}
       />
     </motion.div>
   );
@@ -488,8 +733,8 @@ function SkeletonCard({ delay }) {
 
 /* ─── Question Card ───────────────────────────────────────────── */
 function QuestionCard({ question, index }) {
-  const diff     = difficultyConfig[question.difficulty] || difficultyConfig.Medium;
-  const platform = platformColors[question.platform]     || platformColors.LeetCode;
+  const diff = difficultyConfig[question.difficulty] || difficultyConfig.Medium;
+  const platform = platformColors[question.platform] || platformColors.LeetCode;
   const DiffIcon = diff.icon;
   const [hovered, setHovered] = useState(false);
 
@@ -497,15 +742,24 @@ function QuestionCard({ question, index }) {
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: index * 0.07, type: "spring", stiffness: 120, damping: 14 }}
+      transition={{
+        delay: index * 0.07,
+        type: "spring",
+        stiffness: 120,
+        damping: 14,
+      }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       className="group"
     >
-      <Link href={`/dashboard/practice/${question.id}?data=${encodeURIComponent(JSON.stringify(question))}`}>
+      <Link
+        href={`/dashboard/practice/${question.id}?data=${encodeURIComponent(JSON.stringify(question))}`}
+      >
         <div
           className={`relative bg-[#0a0a12] border rounded-2xl p-6 h-full transition-all duration-300 overflow-hidden cursor-pointer ${
-            hovered ? `border-indigo-500/40 shadow-2xl shadow-indigo-500/10` : "border-white/6"
+            hovered
+              ? `border-indigo-500/40 shadow-2xl shadow-indigo-500/10`
+              : "border-white/6"
           }`}
         >
           {/* Card glow on hover */}
@@ -516,20 +770,29 @@ function QuestionCard({ question, index }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 pointer-events-none"
-                style={{ background: "radial-gradient(600px circle at 50% 0%, rgba(99,102,241,0.08), transparent 70%)" }}
+                style={{
+                  background:
+                    "radial-gradient(600px circle at 50% 0%, rgba(99,102,241,0.08), transparent 70%)",
+                }}
               />
             )}
           </AnimatePresence>
 
           {/* Difficulty accent bar */}
-          <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${diff.bar} opacity-60 group-hover:opacity-100 transition-opacity`} />
+          <div
+            className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${diff.bar} opacity-60 group-hover:opacity-100 transition-opacity`}
+          />
 
           {/* Header row */}
           <div className="flex items-center justify-between mb-5">
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest ${platform.bg} ${platform.border} ${platform.color}`}>
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest ${platform.bg} ${platform.border} ${platform.color}`}
+            >
               {question.platform}
             </div>
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest ${diff.bg} ${diff.border} ${diff.color}`}>
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest ${diff.bg} ${diff.border} ${diff.color}`}
+            >
               <DiffIcon size={9} />
               {diff.label}
             </div>
@@ -538,15 +801,16 @@ function QuestionCard({ question, index }) {
           {/* Index number — editorial flair */}
           <div
             className="absolute top-5 left-1/2 -translate-x-1/2 text-[80px] font-black italic leading-none pointer-events-none select-none"
-            style={{ color: "rgba(255,255,255,0.015)", fontFamily: "'Courier New', monospace" }}
+            style={{
+              color: "rgba(255,255,255,0.015)",
+              fontFamily: "'Courier New', monospace",
+            }}
           >
             {String(index + 1).padStart(2, "0")}
           </div>
 
           {/* Title */}
-          <h3 className="relative text-base font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors leading-snug line-clamp-2"
-            
-          >
+          <h3 className="relative text-base font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors leading-snug line-clamp-2">
             {question.title}
           </h3>
 
@@ -557,8 +821,11 @@ function QuestionCard({ question, index }) {
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1.5 mb-5">
-            {question.tags?.slice(0, 3).map(t => (
-              <span key={t} className="flex items-center gap-1 text-[9px] px-2 py-1 rounded bg-indigo-500/5 text-indigo-400 border border-indigo-500/15 font-bold uppercase">
+            {question.tags?.slice(0, 3).map((t) => (
+              <span
+                key={t}
+                className="flex items-center gap-1 text-[9px] px-2 py-1 rounded bg-indigo-500/5 text-indigo-400 border border-indigo-500/15 font-bold uppercase"
+              >
                 <Hash size={7} />
                 {t}
               </span>

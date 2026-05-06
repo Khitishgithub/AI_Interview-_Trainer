@@ -222,7 +222,7 @@ export default function RoadmapHome() {
           </div>
 
           {/* Title */}
-          <h1 className="text-[clamp(40px,7vw,72px)] font-black italic uppercase tracking-tighter leading-[0.95] mb-3">
+          <h1 className="text-6xl font-black uppercase  italic tracking-tighter leading-none mb-3">
             <span className="text-white">CHOOSE YOUR</span>
             <br />
             <span

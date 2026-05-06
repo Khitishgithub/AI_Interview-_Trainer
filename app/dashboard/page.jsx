@@ -52,7 +52,7 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white uppercase tracking-widest">
               <Terminal size={10} />
-              AI Interview Lab
+              geterview Lab
             </div>
           </motion.div>
 

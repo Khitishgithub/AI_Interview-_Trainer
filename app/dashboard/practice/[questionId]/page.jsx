@@ -98,7 +98,6 @@ export default function QuestionPage() {
     }
 
     try {
-      // Submit to Judge0
       const submitRes = await fetch(
         "http://localhost:2358/submissions?base64_encoded=false",
         {
@@ -117,7 +116,7 @@ export default function QuestionPage() {
       );
       const { token } = await submitRes.json();
 
-      // Poll for result
+
       let output = null;
       for (let i = 0; i < 10; i++) {
         await new Promise((r) => setTimeout(r, 1000));
@@ -132,7 +131,6 @@ export default function QuestionPage() {
         );
         const data = await pollRes.json();
         if (data.status?.id > 2) {
-          // not queued/processing
           output = data;
           break;
         }
@@ -186,7 +184,6 @@ export default function QuestionPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white  flex flex-col">
-      {/* ── Top bar ── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#0d0d14]">
         <div className="flex items-center gap-3">
           <button
@@ -257,9 +254,8 @@ export default function QuestionPage() {
         className="flex flex-1 overflow-hidden"
         style={{ height: "calc(100vh - 57px)" }}
       >
-        {/* Left panel */}
+
         <div className="w-[42%] flex flex-col border-r border-white/5 overflow-hidden">
-          {/* Tabs */}
           <div className="flex border-b border-white/5">
             {tabConfig.map((t) => (
               <button
@@ -408,7 +404,6 @@ export default function QuestionPage() {
               </div>
             )}
 
-            {/* Output tab */}
             {activeTab === "output" && (
               <div className="space-y-4">
                 {!result && !running && (
