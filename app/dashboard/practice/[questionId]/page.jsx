@@ -80,23 +80,6 @@ export default function QuestionPage() {
     setRunning(true);
     setResult(null);
     setActiveTab("output");
-
-    const rapidApiKey = process.env.NEXT_PUBLIC_RAPIDAPI_KEY;
-
-    if (!rapidApiKey) {
-      // Simulate without Judge0 if key not set
-      await new Promise((r) => setTimeout(r, 1200));
-      setResult({
-        status: "simulated",
-        stdout:
-          "⚠️ Add NEXT_PUBLIC_RAPIDAPI_KEY to .env.local to enable real execution.\n\nCode received successfully!",
-        time: "~",
-        memory: "~",
-      });
-      setRunning(false);
-      return;
-    }
-
     try {
       const submitRes = await fetch(
         "http://localhost:2358/submissions?base64_encoded=false",
@@ -104,8 +87,6 @@ export default function QuestionPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-RapidAPI-Key": rapidApiKey,
-            "X-RapidAPI-Host": "judge0-extra-ce1.p.rapidapi.com",
           },
           body: JSON.stringify({
             source_code: code,
@@ -116,7 +97,6 @@ export default function QuestionPage() {
       );
       const { token } = await submitRes.json();
 
-
       let output = null;
       for (let i = 0; i < 10; i++) {
         await new Promise((r) => setTimeout(r, 1000));
@@ -124,8 +104,7 @@ export default function QuestionPage() {
           `http://localhost:2358/submissions/${token}?base64_encoded=false`,
           {
             headers: {
-              "X-RapidAPI-Key": rapidApiKey,
-              "X-RapidAPI-Host": "judge0-extra-ce1.p.rapidapi.com",
+              "Content-Type": "application/json",
             },
           },
         );
@@ -254,7 +233,6 @@ export default function QuestionPage() {
         className="flex flex-1 overflow-hidden"
         style={{ height: "calc(100vh - 57px)" }}
       >
-
         <div className="w-[42%] flex flex-col border-r border-white/5 overflow-hidden">
           <div className="flex border-b border-white/5">
             {tabConfig.map((t) => (
@@ -439,7 +417,11 @@ export default function QuestionPage() {
                       ) : (
                         <XCircle size={16} />
                       )}
-                     {result.status === "simulated" ? "Simulation Mode" : result.passed ? "Accepted" : "Wrong Answer"}
+                      {result.status === "simulated"
+                        ? "Simulation Mode"
+                        : result.passed
+                          ? "Accepted"
+                          : "Wrong Answer"}
                       {result.time && result.time !== "~" && (
                         <span className="ml-auto text-xs font-normal text-gray-500">
                           {result.time}s · {result.memory} KB

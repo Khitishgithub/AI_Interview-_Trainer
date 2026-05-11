@@ -26,7 +26,7 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import { sendPrompt, sendQuestions } from "@/utils/GeminiAIModel";
+import { sendQuestions } from "@/utils/GeminiAIModel";
 import { v4 as uuidv4 } from "uuid";
 
 const CACHE_KEY = "practice_arena_cache";

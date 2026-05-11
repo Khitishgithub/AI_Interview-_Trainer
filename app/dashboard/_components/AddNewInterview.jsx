@@ -8,7 +8,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { sendPrompt, sendPromptWithPDF } from "@/utils/GeminiAIModel";
+import { sendPrompt, sendPromptWithPDF, sendQuestions } from "@/utils/GeminiAIModel";
 import { LoaderCircle, Upload, X, FileText, ClipboardList, Plus, Sparkles, Terminal } from "lucide-react";
 import { mockInterview } from "@/utils/schema";
 import { v4 as uuidv4 } from "uuid";
@@ -62,7 +62,7 @@ const AddNewInterview = () => {
         rawResult = await sendPromptWithPDF(prompt, pdfBase64);
       } else {
         const prompt = `Job position: ${jobPosition}. Job Description: ${jobDesc}. Years of Experience: ${jobExperience}. Generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT} interview questions with answers in JSON. Return only a JSON object with a key "questions" containing an array of objects, each with "question" and "answer" fields.`;
-        rawResult = await sendPrompt(prompt);
+        rawResult = await sendQuestions(prompt);
       }
     let mockJsonResp = rawResult
   .replace(/```json/g, "")

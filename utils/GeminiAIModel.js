@@ -41,9 +41,14 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+
+
 const ai = new GoogleGenAI({
   apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
 });
+
+
+
 
 export async function sendPrompt(prompt) {
   const res = await fetch("http://localhost:11434/api/generate", {
@@ -71,6 +76,8 @@ export async function sendQuestions(prompt) {
   });
   return res.text;
 }
+
+
 
 export async function sendPromptWithPDF(prompt, pdfBase64) {
   const res = await ai.models.generateContent({

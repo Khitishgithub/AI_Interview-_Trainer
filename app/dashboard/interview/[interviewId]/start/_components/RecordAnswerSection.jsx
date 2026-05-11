@@ -134,7 +134,7 @@ const RecordAnswerSection = ({
     console.log("📤 [GEMINI] Sending prompt...");
 
     try {
-      const result = await sendPrompt(feedbackPrompt);
+      const result = await sendQuestions(feedbackPrompt);
       console.log("📥 [GEMINI] Raw result:", result);
 
       const mockJsonResp = result
