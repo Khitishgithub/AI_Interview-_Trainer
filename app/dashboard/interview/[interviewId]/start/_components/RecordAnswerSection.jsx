@@ -11,7 +11,7 @@ import { db } from "@/utils/db";
 import { UserAnswer } from "@/utils/schema";
 import { useUser } from "@clerk/nextjs";
 import moment from "moment";
-import { sendPrompt } from "@/utils/GeminiAIModel";
+import { sendPrompt, sendQuestions } from "@/utils/GeminiAIModel";
 
 const RecordAnswerSection = ({
   mockInterviewQuestions,
